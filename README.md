@@ -13,13 +13,13 @@ This project demonstrates a distributed system that processes a large CSV datase
 - Pickle (Serialization)
 
 ## 📁 Project Structure
-sales_distributed_analysis/
+'''sales_distributed_analysis/
 ├── config.py
 ├── db_handler.py
 ├── server.py
 ├── worker.py
 ├── sample_data.csv
-└── results.db
+└── results.db'''
 
 🚀 How It Works
 1. Data Loading & Chunking: The server loads the full sales CSV and splits it into chunks.
