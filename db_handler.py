@@ -1,5 +1,3 @@
-# db_handler.py
-
 import sqlite3
 from config import DB_FILE
 from datetime import datetime
