@@ -22,26 +22,33 @@ def handle_worker(conn, addr, chunk, worker_id):
     # Send the data chunk
     print(f"[→] Sending chunk to {worker_id}...")
 
-    chunk_bytes = pickle.dumps(chunk)
-    chunk_size = len(chunk_bytes)
-    conn.sendall(chunk_size.to_bytes(8, byteorder='big'))  # Send length first
-    conn.sendall(chunk_bytes)  # Then send actual data
+    try:
+        chunk_bytes = pickle.dumps(chunk)
+        chunk_size = len(chunk_bytes)
+        conn.sendall(chunk_size.to_bytes(8, byteorder='big'))  # Send length first
+        conn.sendall(chunk_bytes)  # Then actual data
 
-    print(f"[✓] Chunk sent to {worker_id}.")
+        print(f"[✓] Chunk sent to {worker_id}.")
 
-    # Receiving results
-    print(f"[←] Waiting for result from {worker_id}...")
-    data = b""
-    while True:
-        packet = conn.recv(BUFFER_SIZE)
-        if not packet:
-            break
-        data += packet
+        # Receiving results
+        print(f"[←] Waiting for result from {worker_id}...")
+        data = b""
+        while True:
+            packet = conn.recv(BUFFER_SIZE)
+            if not packet:
+                break
+            data += packet
 
-    result = pickle.loads(data)
-    insert_result(result)
-    print(f"[✓] Received and stored result from {worker_id}")
-    conn.close()
+        result = pickle.loads(data)
+        insert_result(result)
+        print(f"[✓] Received and stored result from {worker_id}")
+
+    except Exception as e:
+        print(f"[!] Error handling worker {worker_id}: {e}")
+
+    finally:
+        conn.close()
+        print(f"[{worker_id}] Connection Closed.")
 
 def main():
     print("[*] Initializing database...")

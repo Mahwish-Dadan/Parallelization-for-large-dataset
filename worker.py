@@ -29,27 +29,34 @@ def main(worker_id):
 
     # then receive the actual data chunk
     print(f"[{worker_id}] Waiting to receive data chunk...")
-    data = b""
-    while len(data) < data_len:
-        to_read = min(BUFFER_SIZE, data_len - len(data))
-        packet = client.recv(to_read)
-        if not packet:
-            break
-        data += packet
+    try:
+        data = b""
+        while len(data) < data_len:
+            to_read = min(BUFFER_SIZE, data_len - len(data))
+            packet = client.recv(to_read)
+            if not packet:
+                break
+            data += packet
 
-    # deserializing data received using pickle
-    print(f"[{worker_id}] Data received. Deserializing...")
-    df = pickle.loads(data)
+        # deserializing data received using pickle
+        print(f"[{worker_id}] Data received. Deserializing...")
+        df = pickle.loads(data)
 
-    print(f"[{worker_id}] Received data chunk of size: {len(df)}")
+        print(f"[{worker_id}] Received data chunk of size: {len(df)}")
 
-    result = compute_metrics(df, worker_id)
+        result = compute_metrics(df, worker_id)
 
-    # Sending result back to server using same connection
-    print(f"[{worker_id}] Sending result back to server...")
-    client.sendall(pickle.dumps(result))
-    print(f"[{worker_id}] Result sent. Closing connection.")
-    client.close()
+        # Sending result back to server using same connection
+        print(f"[{worker_id}] Sending result back to server...")
+        client.sendall(pickle.dumps(result))
+        print(f"[{worker_id}] Result sent. Closing connection.")
+
+    except Exception as e:
+        print(f"[{worker_id}] Error during processing: {e}")
+
+    finally:
+        client.close()
+        print(f"[{worker_id}] Connection Closed.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
